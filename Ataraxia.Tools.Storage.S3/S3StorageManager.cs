@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.IO.Compression;
+using System.Text;
 using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Ataraxia.Tools.Storage.S3
 {
+
     public class S3StorageManager : IManageFiles
     {
         private readonly ILogger<S3StorageManager> _logger;
@@ -34,6 +37,30 @@ namespace Ataraxia.Tools.Storage.S3
 
             return memoryStream;
         }
-        
+
+        private MemoryStream EncodeString(string content)
+        {
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            memoryStream.Flush();
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
+
+        private MemoryStream CompressString(string content)
+        {
+            var memoryStream = new MemoryStream();
+
+            using (var zip = new GZipStream(memoryStream, CompressionMode.Compress, true))
+            {
+                var buffer = Encoding.UTF8.GetBytes(content);
+                zip.Write(buffer, 0, buffer.Length);
+                zip.Flush();
+            }
+
+            memoryStream.Flush();
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
+
     }
 }
