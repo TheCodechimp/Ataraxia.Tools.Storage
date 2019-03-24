@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,6 +51,20 @@ namespace Ataraxia.Tools.Storage.S3
             };
 
             var result = await _client.PutObjectAsync(request);
+        }
+
+        public async Task<IEnumerable<string>> ListFilesAsync()
+        {
+            var fileList = new List<string>();
+            var request = new ListObjectsRequest();
+            request.BucketName = _options.Directory;
+            var response = await _client.ListObjectsAsync(request);
+
+            if (!response.S3Objects.Any()) return new List<string>();
+
+            response.S3Objects.ForEach(r => fileList.Add(r.Key));
+
+            return fileList;
         }
 
         private MemoryStream EncodeString(string content)

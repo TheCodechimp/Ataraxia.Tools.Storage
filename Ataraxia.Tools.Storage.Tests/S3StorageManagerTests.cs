@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +48,35 @@ namespace Ataraxia.Tools.Storage.Tests
             S3StorageManager sut)
         {
             Should.NotThrow(async () => { await sut.WriteAsync(fileInfo); });
+        }
+
+        [Theory]
+        [AutoMock]
+        public async Task WhenGettingBucketListings_ShouldReturnFileResults(
+            [Frozen] Mock<IAmazonS3> client,            
+            S3StorageManager sut)
+        {
+            client.Setup(r => r.ListObjectsAsync(It.IsAny<ListObjectsRequest>(), CancellationToken.None))
+                .ReturnsAsync(new ListObjectsResponse()
+                {
+                    S3Objects = new List<S3Object>()
+                    {
+                        new S3Object()
+                        {
+                            BucketName = "TestBucket",
+                            Key = "TestFile"                            
+                        }
+                    }
+                });
+
+            var result = await sut.ListFilesAsync();
+            result.ShouldSatisfyAllConditions(() =>
+            {
+                result.ShouldBeOfType<List<string>>();
+                result.Count().ShouldBe(1);
+                result.First().ShouldBe("TestFile");
+            });
+
         }
 
     }
