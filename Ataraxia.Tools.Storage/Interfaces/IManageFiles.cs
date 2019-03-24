@@ -6,6 +6,7 @@ namespace Atraxia.Tools.Storage
 {
     public interface IManageFiles
     {
-        Task<Stream> ReadAsync(string fileName);        
+        Task<Stream> ReadAsync(string fileName);
+        Task WriteAsync(FileMetaData fileInfo);
     }
 }

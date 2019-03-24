@@ -8,6 +8,7 @@ using Amazon.S3.Model;
 using Ataraxia.Tools.Storage.Extensions;
 using Ataraxia.Tools.Storage.S3;
 using Ataraxia.Tools.Testing;
+using Atraxia.Tools.Storage;
 using AutoFixture.Xunit2;
 using Moq;
 using Shouldly;
@@ -37,5 +38,15 @@ namespace Ataraxia.Tools.Storage.Tests
                 result.ConvertToString().ShouldBe("I AM A TEST!");
             });
         }
+
+        [Theory]
+        [AutoMock]
+        public async Task WhenWritingAnAsyncFile_ShouldSucceed(
+            FileMetaData fileInfo,            
+            S3StorageManager sut)
+        {
+            Should.NotThrow(async () => { await sut.WriteAsync(fileInfo); });
+        }
+
     }
 }

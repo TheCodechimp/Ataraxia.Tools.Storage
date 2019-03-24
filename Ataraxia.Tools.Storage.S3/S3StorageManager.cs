@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon.S3;
@@ -28,7 +30,6 @@ namespace Ataraxia.Tools.Storage.S3
             GetObjectRequest request = new GetObjectRequest();
             request.BucketName = _options.Directory;
             request.Key = fileName;
-            string responseBody = "";
             var memoryStream = new MemoryStream();
 
             using (GetObjectResponse response = await _client.GetObjectAsync(request))
@@ -38,6 +39,18 @@ namespace Ataraxia.Tools.Storage.S3
             return memoryStream;
         }
 
+        public async Task WriteAsync(FileMetaData fileInfo)
+        {
+            PutObjectRequest request = new PutObjectRequest
+            {
+                BucketName = _options.Directory,
+                Key = fileInfo.FileName,
+                InputStream = fileInfo.Contents
+            };
+
+            var result = await _client.PutObjectAsync(request);
+        }
+
         private MemoryStream EncodeString(string content)
         {
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
@@ -45,7 +58,7 @@ namespace Ataraxia.Tools.Storage.S3
             memoryStream.Position = 0;
             return memoryStream;
         }
-
+        
         private MemoryStream CompressString(string content)
         {
             var memoryStream = new MemoryStream();
